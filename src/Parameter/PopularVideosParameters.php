@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Devscast\Pexels\Parameter;
 
 use Devscast\Pexels\Mapper;
+use Override;
 use Webmozart\Assert\Assert;
 
 /**
@@ -54,6 +55,7 @@ final class PopularVideosParameters extends Parameters
         $this->max_duration = $max_duration;
     }
 
+    #[Override]
     public function toArray(): array
     {
         return array_filter(Mapper::toArray([], $this), fn ($p): bool => $p !== null);
