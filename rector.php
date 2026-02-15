@@ -10,4 +10,5 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     ->withPhpSets(php82: true)
-    ->withTypeCoverageLevel(0);
+    ->withImportNames(removeUnusedImports: true)
+    ->withPreparedSets(deadCode: true, codeQuality: true, codingStyle: true, typeDeclarations: true, typeDeclarationDocblocks: true, symfonyCodeQuality: true, symfonyConfigs: true);

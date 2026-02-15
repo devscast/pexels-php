@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Data;
 
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * class Videos.
@@ -22,7 +22,9 @@ final class Videos
      */
     public ?string $url = null;
 
-    /** @var array<T> */
+    /**
+     * @var array<T>
+     */
     #[Ignore]
     public array $videos = [];
 }

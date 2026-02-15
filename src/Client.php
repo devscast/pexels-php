@@ -16,6 +16,7 @@ use Devscast\Pexels\Parameter\CollectionParameters;
 use Devscast\Pexels\Parameter\PaginationParameters;
 use Devscast\Pexels\Parameter\PopularVideosParameters;
 use Devscast\Pexels\Parameter\SearchParameters;
+use Exception;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpClient\Retry\GenericRetryStrategy;
 use Symfony\Component\HttpClient\RetryableHttpClient;
@@ -24,13 +25,14 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 /**
  * class Client.
  *
  * @author bernard-ng <bernard@devscast.tech>
  */
-readonly class Client
+final readonly class Client
 {
     private HttpClientInterface $http;
 
@@ -76,8 +78,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -103,8 +105,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -129,8 +131,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -153,8 +155,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -166,12 +168,12 @@ readonly class Client
     public function photo(int $id): Photo
     {
         try {
-            $data = $this->http->request('GET', "/v1/photos/{$id}")->toArray();
+            $data = $this->http->request('GET', '/v1/photos/' . $id)->toArray();
             /** @var Photo $photo */
             $photo = $this->serializer->denormalize($data, Photo::class);
             return $photo;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -183,13 +185,13 @@ readonly class Client
     public function video(int $id): Video
     {
         try {
-            $data = $this->http->request('GET', "/videos/videos/{$id}")->toArray();
+            $data = $this->http->request('GET', '/videos/videos/' . $id)->toArray();
             /** @var Video $video */
             $video = $this->serializer->denormalize($data, Video::class);
 
             return $video;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -211,8 +213,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -234,8 +236,8 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
@@ -251,7 +253,7 @@ readonly class Client
             /** @var CollectionMedia $mapped */
             $mapped = $this->getMappedData(
                 type: CollectionMedia::class,
-                data: $this->http->request('GET', "/v1/collections/{$id}", [
+                data: $this->http->request('GET', '/v1/collections/' . $id, [
                     'query' => [
                         ...$parameters->toArray(),
                     ],
@@ -259,15 +261,15 @@ readonly class Client
             );
 
             return $mapped;
-        } catch (\Throwable $e) {
-            $this->createExceptionFromResponse($e);
+        } catch (Throwable $throwable) {
+            $this->createExceptionFromResponse($throwable);
         }
     }
 
     /**
      * @throws NetworkException
      */
-    private function createExceptionFromResponse(\Throwable $exception): never
+    private function createExceptionFromResponse(Throwable $exception): never
     {
         if ($exception instanceof HttpExceptionInterface) {
             try {
@@ -276,7 +278,7 @@ readonly class Client
                     message: $response->getContent(false),
                     status: $response->getStatusCode()
                 );
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 throw new NetworkException($exception->getMessage());
             }
         } else {
@@ -286,7 +288,8 @@ readonly class Client
 
     /**
      * @throws ExceptionInterface
-     * @throws \Exception
+     * @throws Exception
+     * @param array<string, mixed> $data
      */
     private function getMappedData(string $type, array $data): Photos|Videos|Collections|CollectionMedia
     {
@@ -295,22 +298,41 @@ readonly class Client
 
         match (true) {
             $mapped instanceof Photos => $mapped->photos = array_map(
-                fn ($m) => $this->serializer->denormalize($m, type: Photo::class),
-                $data['photos']
+                fn (mixed $m): mixed => $this->serializer->denormalize($m, type: Photo::class),
+                $this->getArrayData($data, 'photos')
             ),
             $mapped instanceof Videos => $mapped->videos = array_map(
-                fn ($m) => $this->serializer->denormalize($m, type: Video::class),
-                $data['videos']
+                fn (mixed $m): mixed => $this->serializer->denormalize($m, type: Video::class),
+                $this->getArrayData($data, 'videos')
             ),
-            $mapped instanceof Collections =>$mapped->collections = array_map(
-                fn ($m) => $this->serializer->denormalize($m, type: Collection::class),
-                $data['collections']
+            $mapped instanceof Collections => $mapped->collections = array_map(
+                fn (mixed $m): mixed => $this->serializer->denormalize($m, type: Collection::class),
+                $this->getArrayData($data, 'collections')
             ),
-            $mapped instanceof CollectionMedia => $mapped->media = array_map(fn($m) => $m['type'] === 'Photo' ?
-                $this->serializer->denormalize($m, type: Photo::class) :
-                $this->serializer->denormalize($m, type: Video::class), $data['media'])
+            $mapped instanceof CollectionMedia => $mapped->media = array_map(
+                fn (mixed $m): mixed => $this->serializer->denormalize(
+                    data: is_array($m) ? $m : [],
+                    type: is_array($m) && \in_array($m['type'] ?? null, ['Photo', 'photo'], true) ? Photo::class : Video::class
+                ),
+                $this->getArrayData($data, 'media')
+            )
         };
 
         return $mapped;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<int, mixed>
+     */
+    private function getArrayData(array $data, string $key): array
+    {
+        $value = $data[$key] ?? [];
+
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values($value);
     }
 }

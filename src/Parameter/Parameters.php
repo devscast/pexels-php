@@ -36,6 +36,6 @@ abstract class Parameters
 
     public function toArray(): array
     {
-        return array_filter(Mapper::toArray([], $this), fn ($p) => $p !== null);
+        return array_filter(Mapper::toArray([], $this), fn ($p): bool => $p !== null);
     }
 }

@@ -2,16 +2,20 @@
 
 declare(strict_types=1);
 
-return static function (\Symplify\EasyCodingStandard\Config\ECSConfig $containerConfigurator): void {
-    $parameters = $containerConfigurator->parameters();
-    $parameters->set(Symplify\EasyCodingStandard\ValueObject\Option::PATHS, [
+use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
+use Symplify\EasyCodingStandard\Config\ECSConfig;
+
+return ECSConfig::configure()
+    ->withPaths([
         __DIR__ . '/src',
-    ]);
+        __DIR__ . '/tests',
+    ])
 
-    $containerConfigurator->import(Symplify\EasyCodingStandard\ValueObject\Set\SetList::PSR_12);
-    $containerConfigurator->import(Symplify\EasyCodingStandard\ValueObject\Set\SetList::COMMON);
-    $containerConfigurator->import(Symplify\EasyCodingStandard\ValueObject\Set\SetList::CLEAN_CODE);
-
-    $services = $containerConfigurator->services();
-    $services->remove(PhpCsFixer\Fixer\Operator\ConcatSpaceFixer::class);
-};
+    ->withRules([
+        NoUnusedImportsFixer::class,
+    ])
+    ->withPreparedSets(
+        psr12: true,
+        common: true,
+        cleanCode: true,
+    );

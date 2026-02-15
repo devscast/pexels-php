@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests\Parameter;
 
-use PHPUnit\Framework\TestCase;
 use Devscast\Pexels\Parameter\CollectionParameters;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class CollectionParametersTest.
@@ -34,7 +35,7 @@ class CollectionParametersTest extends TestCase
     {
         $invalidType = 'invalid_type';
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new CollectionParameters($invalidType, 1, 15, 'asc');
     }
 
@@ -42,7 +43,7 @@ class CollectionParametersTest extends TestCase
     {
         $invalidSort = 'invalid_sort';
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new CollectionParameters(null, 1, 15, $invalidSort);
     }
 
@@ -52,13 +53,12 @@ class CollectionParametersTest extends TestCase
         $resultArray = $collectionParams->toArray();
 
         // Assertions for toArray() method
-        $this->assertIsArray($resultArray);
         $this->assertArrayHasKey('page', $resultArray);
         $this->assertArrayHasKey('per_page', $resultArray);
         $this->assertArrayHasKey('type', $resultArray);
         $this->assertArrayHasKey('sort', $resultArray);
 
         // Verify that null values are filtered out
-        $this->assertArrayNotHasKey('type', array_filter($resultArray, fn ($p) => $p === null));
+        $this->assertArrayNotHasKey('type', array_filter($resultArray, fn ($p): bool => $p === null));
     }
 }

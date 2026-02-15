@@ -52,9 +52,26 @@ final class SearchParameters extends Parameters
         Assert::nullOrOneOf($orientation, ['landscape', 'portrait', 'square']);
         Assert::nullOrOneOf($size, ['large', 'medium', 'small']);
 
-        // TODO: support hexadecimal colors
-        Assert::nullOrOneOf($color, ['red', 'orange', 'yellow', 'green', 'turquoise', 'blue', 'violet', 'pink', 'brown', 'black', 'gray', 'white']);
-        //Assert::nullOrRegex($color, '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', 'Invalid hexadecimal color');
+        if ($color !== null) {
+            $supportedColors = [
+                'red' => true,
+                'orange' => true,
+                'yellow' => true,
+                'green' => true,
+                'turquoise' => true,
+                'blue' => true,
+                'violet' => true,
+                'pink' => true,
+                'brown' => true,
+                'black' => true,
+                'gray' => true,
+                'white' => true,
+            ];
+
+            if (! isset($supportedColors[$color])) {
+                Assert::regex($color, '/^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/', 'Invalid color.');
+            }
+        }
 
         Assert::nullOrOneOf($locale, ['en-US', 'pt-BR', 'es-ES', 'ca-ES', 'de-DE', 'it-IT', 'fr-FR', 'sv-SE', 'id-ID', 'pl-PL', 'ja-JP', 'zh-TW', 'zh-CN', 'ko-KR', 'th-TH', 'nl-NL', 'hu-HU', 'vi-VN', 'cs-CZ', 'da-DK', 'fi-FI', 'uk-UA', 'el-GR', 'ro-RO', 'nb-NO', 'sk-SK', 'tr-TR', 'ru-RU']);
 

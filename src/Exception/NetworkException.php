@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Exception;
 
+use Exception;
+use Throwable;
+
 /**
  * Class NetworkException.
  *
@@ -11,19 +14,19 @@ namespace Devscast\Pexels\Exception;
  * @template T
  * @phpstan-template T
  */
-class NetworkException extends \Exception
+class NetworkException extends Exception
 {
     public function __construct(
         string $message,
         public ?int $status = null,
-        public ?\Throwable $previous = null
+        public ?Throwable $previous = null
     ) {
         parent::__construct($message, previous: $this->previous);
     }
 
-    public static function create(string $message, int $status, ?\Throwable $previous = null): self
+    public static function create(string $message, int $status, ?Throwable $previous = null): self
     {
-        $message = empty($message) ? 'No message was provided' : $message;
+        $message = $message === '' || $message === '0' ? 'No message was provided' : $message;
         return match (true) {
             $status === 401 || $status === 429 => new AccountException($message, $status, $previous),
             $status >= 400 && $status <= 499 => new ClientException($message, $status, $previous),

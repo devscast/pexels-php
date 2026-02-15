@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels;
 
+use ReflectionClass;
+
 /**
  * class Mapper.
  *
@@ -20,9 +22,12 @@ abstract class Mapper
         return $object;
     }
 
+    /**
+     * @param array<string, mixed> $array
+     */
     public static function toArray(array $array, object $data): array
     {
-        $reflection = new \ReflectionClass($data);
+        $reflection = new ReflectionClass($data);
         foreach ($reflection->getProperties() as $property) {
             $array[$property->getName()] = $property->getValue($data);
         }

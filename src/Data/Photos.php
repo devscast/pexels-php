@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Data;
 
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * class Photos.
@@ -17,7 +17,9 @@ final class Photos
 {
     use PageableTrait;
 
-    /** @var array<T> An array of Photo objects. */
+    /**
+     * @var array<T> An array of Photo objects.
+     */
     #[Ignore]
     public array $photos = [];
 }

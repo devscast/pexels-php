@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests;
 
-use ReflectionClass;
 use Devscast\Pexels\Client;
-use PHPUnit\Framework\TestCase;
-use Devscast\Pexels\Data\Video;
+use Devscast\Pexels\Data\Collection;
+use Devscast\Pexels\Data\CollectionMedia;
+use Devscast\Pexels\Data\Collections;
 use Devscast\Pexels\Data\Photo;
 use Devscast\Pexels\Data\Photos;
+use Devscast\Pexels\Data\Video;
 use Devscast\Pexels\Data\Videos;
-use Devscast\Pexels\Data\Collection;
-use Devscast\Pexels\Data\Collections;
-use Devscast\Pexels\Data\CollectionMedia;
+use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
@@ -24,22 +24,9 @@ use Symfony\Component\HttpClient\Response\MockResponse;
  */
 final class ClientTest extends TestCase
 {
-    private function getPexels(callable|MockResponse $mock): Client
-    {
-        $pexels = new Client('your_token');
-        $this->setValue($pexels, 'http', new MockHttpClient($mock));
-
-        return $pexels;
-    }
-
-    private function getResponse(string $file): MockResponse
-    {
-        return new MockResponse((string) file_get_contents(__DIR__ . "/responses/{$file}"));
-    }
-
     public function testSearchPhotos(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("search_photos.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('search_photos.json'));
 
         $photos = $pexels->searchPhotos('westie dog');
 
@@ -49,7 +36,7 @@ final class ClientTest extends TestCase
 
     public function testSearchVideos(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("search_videos.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('search_videos.json'));
 
         $videos = $pexels->searchVideos('westie dog');
 
@@ -59,7 +46,7 @@ final class ClientTest extends TestCase
 
     public function testPhoto(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("photo.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('photo.json'));
 
         $photos = $pexels->photo(33);
 
@@ -68,7 +55,7 @@ final class ClientTest extends TestCase
 
     public function testVideo(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("video.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('video.json'));
 
         $videos = $pexels->video(33);
 
@@ -77,7 +64,7 @@ final class ClientTest extends TestCase
 
     public function testPopularVideos(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("popular_videos.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('popular_videos.json'));
 
         $videos = $pexels->popularVideos();
 
@@ -87,7 +74,7 @@ final class ClientTest extends TestCase
 
     public function curatedPhotos(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("curated_photos.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('curated_photos.json'));
 
         $photos = $pexels->curatedPhotos();
 
@@ -97,7 +84,7 @@ final class ClientTest extends TestCase
 
     public function testFeaturedCollections(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("featured_collections.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('featured_collections.json'));
 
         $collections = $pexels->featuredCollections();
 
@@ -107,7 +94,7 @@ final class ClientTest extends TestCase
 
     public function testCollections(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("my_collection.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('my_collection.json'));
 
         $collections = $pexels->collections();
 
@@ -117,22 +104,36 @@ final class ClientTest extends TestCase
 
     public function testCollection(): void
     {
-        $pexels = $this->getPexels(fn ($method, $url, $options) => $this->getResponse("collection_media.json"));
+        $pexels = $this->getPexels(fn ($method, $url, $options): MockResponse => $this->getResponse('collection_media.json'));
 
-        $collections = $pexels->collection("33");
+        $collections = $pexels->collection('33');
 
         $this->assertInstanceOf(CollectionMedia::class, $collections);
 
         /** @var Photo|Video $media */
         foreach ($collections->media as $media) {
-            if ('photo' === $media->type) {
+            if ($media->type === 'photo') {
                 $this->assertInstanceOf(Photo::class, $media);
             }
 
-            if ('video' === $media->type) {
+            if ($media->type === 'video') {
                 $this->assertInstanceOf(Video::class, $media);
             }
         }
+    }
+
+    private function getPexels(callable|MockResponse $mock): Client
+    {
+        $pexels = new Client('your_token');
+        $this->setValue($pexels, 'http', new MockHttpClient($mock));
+
+        /** @var Client $pexels */
+        return $pexels;
+    }
+
+    private function getResponse(string $file): MockResponse
+    {
+        return new MockResponse((string) file_get_contents(__DIR__ . ('/responses/' . $file)));
     }
 
     private function setValue(object &$object, string $propertyName, mixed $value): void

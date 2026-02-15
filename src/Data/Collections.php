@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Data;
 
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * class Collections.
@@ -17,7 +17,9 @@ final class Collections
 {
     use PageableTrait;
 
-    /** @var array<T> */
+    /**
+     * @var array<T>
+     */
     #[Ignore]
     public array $collections = [];
 }

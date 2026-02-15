@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests\Parameter;
 
-use PHPUnit\Framework\TestCase;
 use Devscast\Pexels\Parameter\SearchParameters;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class SearchParametersTest.
@@ -40,7 +41,7 @@ final class SearchParametersTest extends TestCase
         // Test case: Invalid orientation parameter provided
         $invalidOrientation = 'invalid_orientation';
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new SearchParameters($invalidOrientation, null, null, null, 1, 15);
     }
 
@@ -49,7 +50,7 @@ final class SearchParametersTest extends TestCase
         // Test case: Invalid size parameter provided
         $invalidSize = 'invalid_size';
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new SearchParameters(null, $invalidSize, null, null, 1, 15);
     }
 
@@ -58,8 +59,34 @@ final class SearchParametersTest extends TestCase
         // Test case: Invalid color parameter provided
         $invalidColor = 'invalid_color';
 
-        $this->expectException(\InvalidArgumentException::class);
-        new SearchParameters(null, null, $invalidColor, null, 1, 15);;
+        $this->expectException(InvalidArgumentException::class);
+        new SearchParameters(null, null, $invalidColor, null, 1, 15);
+    }
+
+    public function testValidHexColorParameterWithThreeDigits(): void
+    {
+        $color = '#fff';
+
+        $searchParams = new SearchParameters(null, null, $color, null, 1, 15);
+
+        $this->assertEquals($color, $searchParams->color);
+    }
+
+    public function testValidHexColorParameterWithSixDigits(): void
+    {
+        $color = '#a1B2c3';
+
+        $searchParams = new SearchParameters(null, null, $color, null, 1, 15);
+
+        $this->assertEquals($color, $searchParams->color);
+    }
+
+    public function testInvalidHexColorParameter(): void
+    {
+        $invalidColor = '#12';
+
+        $this->expectException(InvalidArgumentException::class);
+        new SearchParameters(null, null, $invalidColor, null, 1, 15);
     }
 
     public function testToArrayMethod(): void
@@ -76,7 +103,6 @@ final class SearchParametersTest extends TestCase
         $resultArray = $searchParams->toArray();
 
         // Assertions for toArray() method
-        $this->assertIsArray($resultArray);
         $this->assertArrayHasKey('orientation', $resultArray);
         $this->assertArrayHasKey('size', $resultArray);
         $this->assertArrayHasKey('color', $resultArray);
@@ -85,6 +111,6 @@ final class SearchParametersTest extends TestCase
         $this->assertArrayHasKey('per_page', $resultArray);
 
         // Verify that null values are filtered out
-        $this->assertArrayNotHasKey('color', array_filter($resultArray, fn ($p) => $p === null));
+        $this->assertArrayNotHasKey('color', array_filter($resultArray, fn ($p): bool => $p === null));
     }
 }

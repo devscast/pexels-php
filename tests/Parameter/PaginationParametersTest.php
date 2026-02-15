@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests\Parameter;
 
-use PHPUnit\Framework\TestCase;
-use Devscast\Pexels\Parameter\Parameters;
 use Devscast\Pexels\Parameter\PaginationParameters;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class PaginationParametersTest.
@@ -33,7 +33,7 @@ final class PaginationParametersTest extends TestCase
         // Test case: Invalid per_page parameter provided
         $invalidPerPage = 10;
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new PaginationParameters(1, $invalidPerPage);
     }
 
@@ -43,7 +43,7 @@ final class PaginationParametersTest extends TestCase
         $negativePage = -1;
         $negativePerPage = -5;
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new PaginationParameters($negativePage, $negativePerPage);
     }
 
@@ -57,11 +57,10 @@ final class PaginationParametersTest extends TestCase
         $resultArray = $parameters->toArray();
 
         // Assertions for toArray() method
-        $this->assertIsArray($resultArray);
         $this->assertArrayHasKey('page', $resultArray);
         $this->assertArrayHasKey('per_page', $resultArray);
 
         // Verify that null values are filtered out
-        $this->assertArrayNotHasKey('per_page', array_filter($resultArray, fn ($p) => $p === null));
+        $this->assertArrayNotHasKey('per_page', array_filter($resultArray, fn ($p): bool => $p === null));
     }
 }

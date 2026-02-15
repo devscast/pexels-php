@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests\Parameter;
 
-use PHPUnit\Framework\TestCase;
 use Devscast\Pexels\Parameter\PopularVideosParameters;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class PopularVideosParametersTest.
@@ -62,13 +62,12 @@ class PopularVideosParametersTest extends TestCase
         $resultArray = $params->toArray();
 
         // Assertions for toArray() method
-        $this->assertIsArray($resultArray);
         $this->assertArrayHasKey('min_width', $resultArray);
         $this->assertArrayHasKey('min_height', $resultArray);
         $this->assertArrayHasKey('min_duration', $resultArray);
         $this->assertArrayHasKey('max_duration', $resultArray);
 
         // Verify that null values are filtered out
-        $this->assertArrayNotHasKey('min_duration', array_filter($resultArray, fn ($p) => $p === null));
+        $this->assertArrayNotHasKey('min_duration', array_filter($resultArray, fn ($p): bool => $p === null));
     }
 }

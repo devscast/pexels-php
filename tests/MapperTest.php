@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Devscast\Pexels\Tests;
 
-use stdClass;
 use Devscast\Pexels\Mapper;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * Class MapperTest.
@@ -18,9 +18,13 @@ final class MapperTest extends TestCase
     public function testToObjectMethod(): void
     {
         // Test case: Test toObject method
-        $data = ['name' => 'John', 'age' => 30];
+        $data = [
+            'name' => 'John',
+            'age' => 30,
+        ];
         $object = new stdClass();
 
+        /** @var stdClass&object{name: string, age: int} $resultObject */
         $resultObject = Mapper::toObject($object, $data);
 
         // Assertions for toObject() method
@@ -32,8 +36,9 @@ final class MapperTest extends TestCase
     public function testToArrayMethod(): void
     {
         // Test case: Test toArray method
-        $data = new class {
+        $data = new class() {
             public string $name;
+
             public int $age;
         };
         $data->name = 'Alice';
@@ -42,7 +47,6 @@ final class MapperTest extends TestCase
         $resultArray = Mapper::toArray([], $data);
 
         // Assertions for toArray() method
-        $this->assertIsArray($resultArray);
         $this->assertArrayHasKey('name', $resultArray);
         $this->assertEquals('Alice', $resultArray['name']);
         $this->assertArrayHasKey('age', $resultArray);
